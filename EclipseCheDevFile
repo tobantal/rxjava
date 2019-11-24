@@ -5,7 +5,7 @@ projects:
     source:
       location: 'https://github.com/tobantal/rxjava.git'
       type: git
-      branch: camel-context
+      branch: master
 attributes:
   persistVolumes: 'false'
 components:
