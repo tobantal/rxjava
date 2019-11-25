@@ -130,4 +130,19 @@ public class SimpleObservableCreationTest {
         // return null;
         return key + ":123";
     }
+
+    @Test
+    public void shouldMap() throws Exception {
+        final List<String> result = new ArrayList<>();
+        Observable<Integer> o = Observable.create(s -> {
+            s.onNext(1);
+            s.onNext(2);
+            s.onNext(3);
+            s.onCompleted();
+        });
+
+        o.map(i -> String.format("Number %d", +i)).subscribe(s -> result.add(s));
+
+        assertThat(result).containsExactly("Number 1", "Number 2", "Number 3");
+    }
 }
