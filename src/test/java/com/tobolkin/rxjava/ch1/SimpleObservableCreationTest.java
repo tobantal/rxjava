@@ -1,9 +1,12 @@
 package com.tobolkin.rxjava.ch1;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.tobolkin.rxjava.util.Sleeper;
 
 import rx.Observable;
 
@@ -53,7 +56,6 @@ public class SimpleObservableCreationTest {
             }
             s.onCompleted();
         });
-
         obs.subscribe(s -> result.add(s));
 
         assertThat(result).hasSize(10);
@@ -84,5 +86,48 @@ public class SimpleObservableCreationTest {
         for (int i = 0; i < 10; i++) {
             assertThat(result).contains(i, atIndex(i));
         }
+    }
+
+    @Test
+    public void shouldGetDataAsynchronously() throws Exception {
+        final String someKey = "foo";
+        // pseudo-code
+        Observable.create(s -> {
+            String fromCache = getFromCache(someKey);
+            if (fromCache != null) {
+                // emit synchronously
+                s.onNext(fromCache);
+                s.onCompleted();
+            } else {
+                // fetch asynchronously
+                getDataAsynchronously(someKey).onResponse(v -> {
+                    putInCache(someKey, v);
+                    s.onNext(v);
+                    s.onCompleted();
+                }).onFailure(exception -> {
+                    s.onError(exception);
+                });
+            }
+        }).subscribe(s -> System.out.println(s));
+
+        Sleeper.sleep(Duration.ofSeconds(2));
+    }
+
+    private void putInCache(String key, String value) {
+        // do nothing
+    }
+
+    private Callback getDataAsynchronously(String key) {
+        final Callback callback = new Callback();
+        new Thread(() -> {
+            Sleeper.sleep(Duration.ofSeconds(1));
+            callback.getOnResponse().accept(key + ":123");
+        }).start();
+        return callback;
+    }
+
+    private String getFromCache(String key) {
+        // return null;
+        return key + ":123";
     }
 }
