@@ -1,5 +1,7 @@
 package com.tobolkin.rxjava;
 
+import java.util.UUID;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -14,12 +16,29 @@ public class RxjavaApplication {
 
         Observable<String> obs1 = Observable.create(s -> {
             s.onNext("Hello World!");
-            s.onNext("This is your world!");
+            for(int i = 0; i < 10; i++) {
+                try {
+					Thread.sleep(1_000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+                }
+                s.onNext(Thread.currentThread().getName() + " >>> " + UUID.randomUUID().toString());
+            }
             s.onCompleted();
         });
 
         Observable<String> obs2 = Observable.create(s -> {
             s.onNext("Hello World from SecondObservable!");
+            for(int i = 0; i < 10; i++) {
+                try {
+					Thread.sleep(1_000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+                }
+                s.onNext(Thread.currentThread().getName() + " >>> " + UUID.randomUUID().toString());
+            }
             s.onCompleted();
         });
 
