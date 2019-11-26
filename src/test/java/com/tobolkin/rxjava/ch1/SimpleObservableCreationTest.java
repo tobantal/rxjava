@@ -19,7 +19,6 @@ import com.tobolkin.rxjava.util.Sleeper;
 
 import org.junit.jupiter.api.Test;
 
-import rx.Completable;
 import rx.Observable;
 import rx.Single;
 import rx.schedulers.Schedulers;
@@ -323,36 +322,27 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_277() throws Exception {
-        // Observable<String> o1 = getDataAsObservable(1);
-        // Observable<String> o2 = getDataAsObservable(2);
-
-        Single<String> s1 = getDataAsSingle(1);
-        Single<String> s2 = getDataAsSingle(2);
+    public void shouldSyncMergeSingle() throws Exception {
+        final List<Integer> results = new ArrayList<>(2);
+        final Single<Integer> s1 = Single.just(1);
+        final Single<Integer> s2 = Single.just(2);
 
         // o3 is now a stream of s1 and s2 that emits each item without waiting
-        Observable<String> o3 = Single.merge(s1, s2);
+        final Observable<Integer> o3 = Single.merge(s1, s2);
+
+        o3.subscribe(results::add);
+
+        assertThat(results).containsExactly(1, 2);
     }
 
-    private Single<String> getDataAsSingle(int i) {
-        return Single.just("Done: " + i);
-    }
-
-
-
-    static Completable writeToDatabase(Object data) {
-        return Completable.create(s -> {
-            doAsyncWrite(data,
-                    // callback for successful completion
-                    () -> s.onCompleted(),
-                    // callback for failure with Throwable
-                    error -> s.onError(error));
-        });
-    }
-
-    static void doAsyncWrite(Object data, Runnable onSuccess, Consumer<Exception> onError) {
-        // store data an run asynchronously:
-        onSuccess.run();
-    }
+    /*
+     * static Completable writeToDatabase(Object data) { return Completable.create(s
+     * -> { doAsyncWrite(data, // callback for successful completion () ->
+     * s.onCompleted(), // callback for failure with Throwable error ->
+     * s.onError(error)); }); }
+     *
+     * static void doAsyncWrite(Object data, Runnable onSuccess, Consumer<Exception>
+     * onError) { // store data an run asynchronously: onSuccess.run(); }
+     */
 
 }
