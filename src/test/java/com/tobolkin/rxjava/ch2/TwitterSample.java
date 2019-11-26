@@ -17,7 +17,7 @@ public class TwitterSample {
 
 	private static final Logger log = LoggerFactory.getLogger(TwitterSample.class);
 
-	@Test
+	//@Test
 	public void sample_18() throws Exception {
 		TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
 		twitterStream.addListener(new twitter4j.StatusListener() {
@@ -96,7 +96,7 @@ public class TwitterSample {
 		twitterStream.sample();
 	}
 
-	@Test
+	//@Test
 	public void sample_99() throws Exception {
 		consume(
 				status -> log.info("Status: {}", status),
@@ -151,7 +151,7 @@ public class TwitterSample {
 		});
 	}
 
-	@Test
+	//@Test
 	public void sample_150() throws Exception {
 		observe().subscribe(
 				status -> log.info("Status: {}", status),
@@ -159,7 +159,7 @@ public class TwitterSample {
 		);
 	}
 
-	@Test
+	//@Test
 	public void sample_162() throws Exception {
 		Observable<Status> observable = status();
 
@@ -186,7 +186,7 @@ public class TwitterSample {
 		});
 	}
 
-	@Test
+	//@Test
 	public void sample_186() throws Exception {
 		Observable<Status> observable = status();
 		Observable<Status> lazy = observable.publish().refCount();
@@ -202,7 +202,7 @@ public class TwitterSample {
 		System.out.println("Unsubscribed 2");
 	}
 
-	@Test
+	//@Test
 	public void sample_206() throws Exception {
 		final Observable<Status> tweets = status();
 		ConnectableObservable<Status> published = tweets.publish();

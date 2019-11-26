@@ -21,8 +21,7 @@ import static java.math.BigInteger.ZERO;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-//@Ignore
-public class Chapter2 {
+public class Chapter2Test {
 
 	@Test
 	public void sample_6() throws Exception {
@@ -32,6 +31,7 @@ public class Chapter2 {
 				System.out.println(tweet));
 	}
 
+    /*
 	@Test
 	public void sample_17() throws Exception {
 		Observable<Tweet> tweets = Observable.empty(); //...
@@ -259,7 +259,7 @@ public class Chapter2 {
 	static <T> Observable<T> delayed2(T x) {
 		return Observable.create(
 				subscriber -> {
-					Runnable r = () -> {/* ... */};
+					Runnable r = () -> {};
 					final Thread thread = new Thread(r);
 					thread.start();
 					subscriber.add(Subscriptions.create(thread::interrupt));
@@ -310,13 +310,14 @@ public class Chapter2 {
 		Sleeper.sleep(Duration.ofSeconds(2));
 	}
 
+
 	@Test
 	public void sample_311() throws Exception {
 		Observable
 				.interval(1_000_000 / 60, MICROSECONDS)
 				.subscribe((Long i) -> log(i));
 		Sleeper.sleep(Duration.ofSeconds(2));
-	}
-
+    }
+    */
 
 }
