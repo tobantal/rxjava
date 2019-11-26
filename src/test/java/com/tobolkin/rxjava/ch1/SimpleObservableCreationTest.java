@@ -142,20 +142,24 @@ public class SimpleObservableCreationTest {
 
         o.map(i -> String.format("Number %d", +i)).subscribe(s -> result.add(s));
 
-        assertThat(result).containsExactlyInAnyOrder("Number 1", "Number 2", "Number 3");
+        assertThat(result).containsExactly("Number 1", "Number 2", "Number 3");
     }
 
     // unchecked tests
     @Test
     public void shouldAyncSubscriptionAndDataEmission() throws Exception {
+        final List<String> threads = new ArrayList<>();
         Observable.<Integer>create(s -> {
             // ... async subscription and data emission ...
-            new Thread(() -> s.onNext(42), "MyThread").start();
-        }).doOnNext(i -> System.out.println(Thread.currentThread())).filter(i -> i % 2 == 0)
+            new Thread(() -> s.onNext(42), "Thread42").start();
+        }).doOnNext(i -> threads.add(Thread.currentThread().getName())).filter(i -> i % 2 == 0)
                 .map(i -> "Value " + i + " processed on " + Thread.currentThread())
-                .subscribe(s -> System.out.println("SOME VALUE =>" + s));
-        System.out.println("Will print BEFORE values are emitted because Observable is async");
+                .subscribe(s -> {});
+        // Will print BEFORE values are emitted because Observable is async
+        threads.add("First thread");
         Sleeper.sleep(Duration.ofSeconds(1));
+
+        assertThat(threads).containsExactly("First thread", "Thread42");
     }
 
     @Test
