@@ -55,11 +55,7 @@ public class SimpleObservableCreationTest {
         final List<Integer> result = new ArrayList<>();
         final Observable<Integer> obs = Observable.create(s -> {
             for (int i = 0; i < 10; i++) {
-                try {
-                    Thread.sleep(1_000);
-                } catch (InterruptedException e) {
-                    // ignore
-                }
+                Sleeper.sleep(Duration.ofMillis(50L));
                 s.onNext(i);
             }
             s.onCompleted();
@@ -72,28 +68,23 @@ public class SimpleObservableCreationTest {
 
     @Test
     void shouldMergeValuesInSync() {
-        final List<Integer> result = new ArrayList<>();
-        final Observable<Integer> obs1 = Observable.create(s -> {
-            for (int i = 0; i < 5; i++) {
-                s.onNext(i);
-            }
+        final List<String> result = new ArrayList<>();
+        final Observable<String> obs1 = Observable.create(s -> {
+            s.onNext("a");
+            s.onNext("b");
             s.onCompleted();
         });
 
-        final Observable<Integer> obs2 = Observable.create(s -> {
-            for (int i = 5; i < 10; i++) {
-                s.onNext(i);
-            }
+        final Observable<String> obs2 = Observable.create(s -> {
+            s.onNext("c");
+            s.onNext("d");
             s.onCompleted();
         });
 
-        final Observable<Integer> obs3 = Observable.merge(obs1, obs2);
-        obs3.subscribe(s -> result.add(s));
+        final Observable<String> obs3 = Observable.merge(obs1, obs2);
+        obs3.subscribe(result::add);
 
-        assertThat(result).hasSize(10);
-        for (int i = 0; i < 10; i++) {
-            assertThat(result).contains(i, atIndex(i));
-        }
+        assertThat(result).containsExactly("a", "b", "c", "d");
     }
 
     @Test
