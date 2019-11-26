@@ -241,7 +241,7 @@ public class SimpleObservableCreationTest {
         dataFromLocalMemorySynchronouslySupplier.get().skip(10).limit(3).map(s -> s + "_transformed")
                 .forEach(result::add);
 
-        assertThat(result).containsExactlyInAnyOrder("10_transformed", "11_transformed", "12_transformed");
+        assertThat(result).containsExactly("10_transformed", "11_transformed", "12_transformed");
     }
 
     @Test
@@ -254,7 +254,7 @@ public class SimpleObservableCreationTest {
 
         obs.subscribe(result::add);
 
-        assertThat(result).containsExactlyInAnyOrder("10_transformed", "11_transformed", "12_transformed");
+        assertThat(result).containsExactly("10_transformed", "11_transformed", "12_transformed");
     }
 
     @Test
@@ -271,26 +271,32 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_240() throws Exception {
-        Observable<String> o1 = getDataAsObservable(1);
-        Observable<String> o2 = getDataAsObservable(2);
+    public void shouldZip() throws Exception {
+        List<Integer> results = new ArrayList<>(1);
+        Function<Integer, Observable<Integer>> observableFactory = Observable::just;
+        Observable<Integer> o1 = observableFactory.apply(2);
+        Observable<Integer> o2 = observableFactory.apply(3);
 
-        Observable<String> o3 = Observable.zip(o1, o2, (x, y) -> {
-            return x + y;
-        });
-    }
+        Observable<Integer> o3 = Observable.zip(o1, o2, (x, y) -> x + y);
 
-    private Observable<String> getDataAsObservable(int i) {
-        return Observable.just("Done: " + i + "\n");
+        o3.subscribe(results::add);
+
+        assertThat(results.get(0)).isEqualTo(5);
     }
 
     @Test
     public void sample_254() throws Exception {
-        Observable<String> o1 = getDataAsObservable(1);
-        Observable<String> o2 = getDataAsObservable(2);
+        List<Integer> results = new ArrayList<>(2);
+        Function<Integer, Observable<Integer>> observableFactory = Observable::just;
+        Observable<Integer> o1 = observableFactory.apply(2);
+        Observable<Integer> o2 = observableFactory.apply(3);
 
         // o3 is now a stream of o1 and o2 that emits each item without waiting
-        Observable<String> o3 = Observable.merge(o1, o2);
+        Observable<Integer> o3 = Observable.merge(o1, o2);
+
+        o3.subscribe(results::add);
+
+        assertThat(results).containsExactly(2, 3);
     }
 
     @Test
