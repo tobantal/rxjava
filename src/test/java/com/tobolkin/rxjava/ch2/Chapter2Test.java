@@ -21,14 +21,14 @@ import static java.math.BigInteger.ZERO;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class Chapter2Test {
 
 	@Test
 	public void sample_6() throws Exception {
-		Observable<Tweet> tweets = Observable.empty(); //...
-
-		tweets.subscribe((Tweet tweet) ->
-				System.out.println(tweet));
+        final Observable<Tweet> tweets = Observable.empty();
+        tweets.test().assertCompleted();
 	}
 
     /*
