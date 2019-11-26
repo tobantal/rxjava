@@ -285,7 +285,7 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_254() throws Exception {
+    public void shouldJustMerge() throws Exception {
         List<Integer> results = new ArrayList<>(2);
         Function<Integer, Observable<Integer>> observableFactory = Observable::just;
         Observable<Integer> o1 = observableFactory.apply(2);
@@ -300,15 +300,26 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_265() throws Exception {
+    public void shouldAsyncMergeSingle() throws Exception {
+        List<String> results = new ArrayList<>(2);
         // merge a & b into an Observable stream of 2 values
-        Observable<String> a_merge_b = getDataA().mergeWith(getDataB());
+        Observable<String> obs = getDataA().mergeWith(getDataB());
+
+        obs.subscribe(results::add);
+        Sleeper.sleep(Duration.ofSeconds(1));
+
+        assertThat(results).containsExactly("DataB", "DataA");
     }
 
-    public static Single<String> getDataA() {
+    private static Single<String> getDataA() {
         return Single.<String>create(o -> {
+            Sleeper.sleep(Duration.ofMillis(100));
             o.onSuccess("DataA");
         }).subscribeOn(Schedulers.io());
+    }
+
+    private static Single<String> getDataB() {
+        return Single.just("DataB").subscribeOn(Schedulers.io());
     }
 
     @Test
@@ -327,9 +338,7 @@ public class SimpleObservableCreationTest {
         return Single.just("Done: " + i);
     }
 
-    public static Single<String> getDataB() {
-        return Single.just("DataB").subscribeOn(Schedulers.io());
-    }
+
 
     static Completable writeToDatabase(Object data) {
         return Completable.create(s -> {
