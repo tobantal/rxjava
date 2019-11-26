@@ -1,29 +1,27 @@
 package com.tobolkin.rxjava.ch1;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Index.atIndex;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.tobolkin.rxjava.util.Sleeper;
-
-import rx.Observable;
-import rx.Completable;
-import rx.Single;
-import rx.schedulers.Schedulers;
-
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.tobolkin.rxjava.util.Sleeper;
+
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.Index.atIndex;
+import rx.Completable;
+import rx.Observable;
+import rx.Single;
+import rx.schedulers.Schedulers;
 
 public class SimpleObservableCreationTest {
 
@@ -275,9 +273,7 @@ public class SimpleObservableCreationTest {
         CompletableFuture<Integer> f1 = completableFutureFactory.apply(2);
         CompletableFuture<Integer> f2 = completableFutureFactory.apply(3);
 
-        CompletableFuture<Integer> f3 = f1.thenCombine(f2, (x, y) -> {
-            return x + y;
-        });
+        CompletableFuture<Integer> f3 = f1.thenCombine(f2, Integer::sum);
 
         assertThat(f3.get()).isEqualTo(13);
     }
