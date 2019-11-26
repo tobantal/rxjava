@@ -15,6 +15,7 @@ import rx.schedulers.Schedulers;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -268,17 +269,17 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_225() throws Exception {
-        CompletableFuture<String> f1 = getDataAsFuture(1);
-        CompletableFuture<String> f2 = getDataAsFuture(2);
+    public void shouldGetDataAsFuture() throws Exception {
+        Function<Integer, CompletableFuture<Integer>> completableFutureFactory = i -> CompletableFuture.completedFuture(i*i);
 
-        CompletableFuture<String> f3 = f1.thenCombine(f2, (x, y) -> {
+        CompletableFuture<Integer> f1 = completableFutureFactory.apply(2);
+        CompletableFuture<Integer> f2 = completableFutureFactory.apply(3);
+
+        CompletableFuture<Integer> f3 = f1.thenCombine(f2, (x, y) -> {
             return x + y;
         });
-    }
 
-    private CompletableFuture<String> getDataAsFuture(int i) {
-        return CompletableFuture.completedFuture("Done: " + i + "\n");
+        assertThat(f3.get()).isEqualTo(13);
     }
 
     @Test
