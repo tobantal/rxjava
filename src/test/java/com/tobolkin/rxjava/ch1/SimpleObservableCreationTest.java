@@ -156,7 +156,7 @@ public class SimpleObservableCreationTest {
 
     // unchecked tests
     @Test
-    public void sample_94() throws Exception {
+    public void shouldAyncSubscriptionAndDataEmission() throws Exception {
         Observable.<Integer>create(s -> {
             // ... async subscription and data emission ...
             new Thread(() -> s.onNext(42), "MyThread").start();
@@ -199,29 +199,6 @@ public class SimpleObservableCreationTest {
             // ignoring need to emit s.onCompleted() due to race of threads
         });
         // DO NOT DO THIS
-    }
-
-    @Test
-    public void sample_142() throws Exception {
-        Observable<String> a = Observable.create(s -> {
-            new Thread(() -> {
-                s.onNext("one");
-                s.onNext("two");
-                s.onCompleted();
-            }).start();
-        });
-
-        Observable<String> b = Observable.create(s -> {
-            new Thread(() -> {
-                s.onNext("three");
-                s.onNext("four");
-                s.onCompleted();
-            }).start();
-        });
-
-        // this subscribes to a and b concurrently, and merges into a third sequential
-        // stream
-        Observable<String> c = Observable.merge(a, b);
     }
 
     @Test
