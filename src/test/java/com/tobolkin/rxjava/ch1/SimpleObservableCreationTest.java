@@ -152,7 +152,7 @@ public class SimpleObservableCreationTest {
 
         o.map(i -> String.format("Number %d", +i)).subscribe(s -> result.add(s));
 
-        assertThat(result).containsExactly("Number 1", "Number 2", "Number 3");
+        assertThat(result).containsExactlyInAnyOrder("Number 1", "Number 2", "Number 3");
     }
 
     // unchecked tests
@@ -169,16 +169,25 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_108() throws Exception {
-        Observable.create(s -> {
-            new Thread(() -> {
+    public void shouldNotRunUntilSubscribe() throws Exception {
+        final List<Thread> threads = new ArrayList<>();
+        final Observable<String> obs = Observable.create(s -> {
+            Thread thread = new Thread(() -> {
                 s.onNext("one");
                 s.onNext("two");
                 s.onNext("three");
                 s.onNext("four");
                 s.onCompleted();
-            }).start();
+            });
+            thread.start();
+            threads.add(thread);
         });
+
+        assertThat(threads).isEmpty();
+
+        obs.subscribe();
+
+        assertThat(threads.get(0).getState()).isEqualTo(Thread.State.RUNNABLE);
     }
 
     @Test
@@ -233,7 +242,7 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_188() throws Exception {
+    public void shouldGetDataFromLocalMemorySynchronously() throws Exception {
         // Iterable<String> as Stream<String>
         // that contains 75 strings
         getDataFromLocalMemorySynchronously().skip(10).limit(5).map(s -> s + "_transformed")
@@ -245,10 +254,13 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_205() throws Exception {
-        // Observable<String>
-        // that emits 75 strings
-        getDataFromNetworkAsynchronously().skip(10).take(5).map(s -> s + "_transformed").subscribe(System.out::println);
+    public void shouldGetDataFromNetworkAsynchronously() throws Exception {
+        final List<String> result = new ArrayList<>(3);
+        final Observable<String> obs = getDataFromNetworkAsynchronously().skip(10).take(3).map(s -> s + "_transformed");
+
+        obs.subscribe(result::add);
+
+        assertThat(result).containsExactlyInAnyOrder("10_transformed", "11_transformed", "12_transformed");
     }
 
     private Observable<String> getDataFromNetworkAsynchronously() {
