@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -208,33 +209,24 @@ public class SimpleObservableCreationTest {
     }
 
     /*
-    @Test
-    public void shouldFallbackAfterError() throws Exception {
-        Supplier<String> nextData = () -> "foo";
-        Supplier<String> error = () -> {throw new RuntimeException();};
-
-        final List<String> result = new ArrayList<>();
-        String args = "foo";
-        Observable<String> someData = Observable.create(s -> {
-            getDataFromServerWithCallback(args, data -> {
-                s.onNext(nextData.get());
-                try {
-                    s.onNext(error.get());
-                } catch(RuntimeException re) {
-                    s.onError(new rx.exceptions.OnErrorNotImplementedException(re));
-                }
-                // does not work, why?
-            });
-        });
-
-        someData.subscribe(result::add);
-
-        Observable<String> lazyFallback = Observable.just("Fallback");
-        someData.onErrorResumeNext(lazyFallback).subscribe(result::add);
-
-        assertThat(result).containsExactly("foo", "Fallback");
-    }
-    */
+     * @Test public void shouldFallbackAfterError() throws Exception {
+     * Supplier<String> nextData = () -> "foo"; Supplier<String> error = () ->
+     * {throw new RuntimeException();};
+     *
+     * final List<String> result = new ArrayList<>(); String args = "foo";
+     * Observable<String> someData = Observable.create(s -> {
+     * getDataFromServerWithCallback(args, data -> { s.onNext(nextData.get()); try {
+     * s.onNext(error.get()); } catch(RuntimeException re) { s.onError(new
+     * rx.exceptions.OnErrorNotImplementedException(re)); } // does not work, why?
+     * }); });
+     *
+     * someData.subscribe(result::add);
+     *
+     * Observable<String> lazyFallback = Observable.just("Fallback");
+     * someData.onErrorResumeNext(lazyFallback).subscribe(result::add);
+     *
+     * assertThat(result).containsExactly("foo", "Fallback"); }
+     */
 
     private void getDataFromServerWithCallback(String args, Consumer<String> consumer) {
         consumer.accept("Random: " + Math.random());
@@ -242,33 +234,33 @@ public class SimpleObservableCreationTest {
 
     @Test
     public void shouldGetDataFromLocalMemorySynchronously() throws Exception {
-        // Iterable<String> as Stream<String>
-        // that contains 75 strings
-        getDataFromLocalMemorySynchronously().skip(10).limit(5).map(s -> s + "_transformed")
-                .forEach(System.out::println);
-    }
+        final List<String> result = new ArrayList<>(3);
+        final Supplier<Stream<String>> dataFromLocalMemorySynchronouslySupplier = () -> IntStream.range(0, 100)
+                .mapToObj(Integer::toString);
 
-    private Stream<String> getDataFromLocalMemorySynchronously() {
-        return IntStream.range(0, 100).mapToObj(Integer::toString);
+        dataFromLocalMemorySynchronouslySupplier.get().skip(10).limit(3).map(s -> s + "_transformed")
+                .forEach(result::add);
+
+        assertThat(result).containsExactlyInAnyOrder("10_transformed", "11_transformed", "12_transformed");
     }
 
     @Test
     public void shouldGetDataFromNetworkAsynchronously() throws Exception {
         final List<String> result = new ArrayList<>(3);
-        final Observable<String> obs = getDataFromNetworkAsynchronously().skip(10).take(3).map(s -> s + "_transformed");
+        final Supplier<Observable<String>> dataFromNetworkAsynchronouslySupplier = () -> Observable.range(0, 100)
+                .map(Object::toString);
+        final Observable<String> obs = dataFromNetworkAsynchronouslySupplier.get().skip(10).take(3)
+                .map(s -> s + "_transformed");
 
         obs.subscribe(result::add);
 
         assertThat(result).containsExactlyInAnyOrder("10_transformed", "11_transformed", "12_transformed");
     }
 
-    private Observable<String> getDataFromNetworkAsynchronously() {
-        return Observable.range(0, 100).map(Object::toString);
-    }
-
     @Test
     public void shouldGetDataAsFuture() throws Exception {
-        Function<Integer, CompletableFuture<Integer>> completableFutureFactory = i -> CompletableFuture.completedFuture(i*i);
+        Function<Integer, CompletableFuture<Integer>> completableFutureFactory = i -> CompletableFuture
+                .completedFuture(i * i);
 
         CompletableFuture<Integer> f1 = completableFutureFactory.apply(2);
         CompletableFuture<Integer> f2 = completableFutureFactory.apply(3);
