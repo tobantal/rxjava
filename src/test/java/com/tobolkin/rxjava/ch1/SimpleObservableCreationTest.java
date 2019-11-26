@@ -15,6 +15,7 @@ import rx.schedulers.Schedulers;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -181,28 +182,7 @@ public class SimpleObservableCreationTest {
     }
 
     @Test
-    public void sample_121() throws Exception {
-        // DO NOT DO THIS
-        Observable.create(s -> {
-            // Thread A
-            new Thread(() -> {
-                s.onNext("one");
-                s.onNext("two");
-            }).start();
-
-            // Thread B
-            new Thread(() -> {
-                s.onNext("three");
-                s.onNext("four");
-            }).start();
-
-            // ignoring need to emit s.onCompleted() due to race of threads
-        });
-        // DO NOT DO THIS
-    }
-
-    @Test
-    public void sample_164() throws Exception {
+    public void shouldSubscribeMultipleSubscribers() throws Exception {
         String args = "foo";
         Observable<String> someData = Observable.create(s -> {
             getDataFromServerWithCallback(args, data -> {
@@ -218,6 +198,35 @@ public class SimpleObservableCreationTest {
         someData.onErrorResumeNext(lazyFallback).subscribe(s -> System.out.println(s));
 
     }
+
+    /*
+    @Test
+    public void shouldFallbackAfterError() throws Exception {
+        Supplier<String> nextData = () -> "foo";
+        Supplier<String> error = () -> {throw new RuntimeException();};
+
+        final List<String> result = new ArrayList<>();
+        String args = "foo";
+        Observable<String> someData = Observable.create(s -> {
+            getDataFromServerWithCallback(args, data -> {
+                s.onNext(nextData.get());
+                try {
+                    s.onNext(error.get());
+                } catch(RuntimeException re) {
+                    s.onError(new rx.exceptions.OnErrorNotImplementedException(re));
+                }
+                // does not work, why?
+            });
+        });
+
+        someData.subscribe(result::add);
+
+        Observable<String> lazyFallback = Observable.just("Fallback");
+        someData.onErrorResumeNext(lazyFallback).subscribe(result::add);
+
+        assertThat(result).containsExactly("foo", "Fallback");
+    }
+    */
 
     private void getDataFromServerWithCallback(String args, Consumer<String> consumer) {
         consumer.accept("Random: " + Math.random());
